@@ -28,7 +28,7 @@ fi
 INSTALL_DIR="/opt/osac-knowledge-bot"
 REPO_URL="https://github.com/xtianburba/knowledgechat.git"
 
-echo -e "${YELLOW}[1/7] Clonando repositorio...${NC}"
+echo -e "${YELLOW}[1/7] Verificando repositorio...${NC}"
 if [ -d "$INSTALL_DIR" ]; then
     echo -e "${YELLOW}  ⚠ Directorio ya existe. Actualizando código...${NC}"
     cd "$INSTALL_DIR"
@@ -36,7 +36,14 @@ if [ -d "$INSTALL_DIR" ]; then
 else
     mkdir -p /opt
     cd /opt
-    git clone "$REPO_URL" osac-knowledge-bot
+    echo -e "${YELLOW}  Intentando clonar repositorio...${NC}"
+    echo -e "${YELLOW}  Si pide autenticación y falla:${NC}"
+    echo -e "${YELLOW}  1. Haz el repositorio público en GitHub, O${NC}"
+    echo -e "${YELLOW}  2. Usa: git clone https://TU_TOKEN@github.com/xtianburba/knowledgechat.git${NC}"
+    git clone "$REPO_URL" osac-knowledge-bot || {
+        echo -e "${RED}  ✗ Error al clonar. Ver SOLUCION_GITHUB_AUTH.md${NC}"
+        exit 1
+    }
     cd osac-knowledge-bot
 fi
 echo -e "${GREEN}  ✓ Código actualizado${NC}"
