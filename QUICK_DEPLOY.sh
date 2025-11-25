@@ -51,7 +51,17 @@ echo ""
 
 echo -e "${YELLOW}[2/7] Instalando dependencias del sistema...${NC}"
 apt update -qq
-apt install -y python3 python3-pip python3-venv nodejs npm git build-essential 2>/dev/null || true
+apt install -y python3 python3-pip python3-venv nodejs npm git build-essential 2>/dev/null || {
+    echo -e "${YELLOW}  Instalando paquetes uno por uno...${NC}"
+    apt install -y python3
+    apt install -y python3-pip
+    # Detectar versión de Python y instalar venv correspondiente
+    PYTHON_VERSION=$(python3 --version | grep -oP '\d+\.\d+' | head -1)
+    PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
+    PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
+    apt install -y python${PYTHON_MAJOR}.${PYTHON_MINOR}-venv || apt install -y python3-venv
+    apt install -y nodejs npm git build-essential
+}
 if ! command -v pm2 &> /dev/null; then
     npm install -g pm2
 fi
@@ -63,9 +73,30 @@ echo ""
 
 echo -e "${YELLOW}[3/7] Configurando Backend...${NC}"
 cd "$INSTALL_DIR/backend"
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
+
+# Eliminar venv si existe pero está corrupto
+if [ -d "venv" ] && [ ! -f "venv/bin/python3" ]; then
+    echo -e "${YELLOW}  Eliminando entorno virtual corrupto...${NC}"
+    rm -rf venv
 fi
+
+# Crear entorno virtual
+if [ ! -d "venv" ]; then
+    echo -e "${YELLOW}  Creando entorno virtual...${NC}"
+    python3 -m venv venv || {
+        echo -e "${RED}  Error creando venv. Instalando python3-venv...${NC}"
+        PYTHON_VERSION=$(python3 --version 2>&1 | grep -oP '\d+\.\d+' | head -1)
+        if [ -n "$PYTHON_VERSION" ]; then
+            PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
+            PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
+            apt install -y python${PYTHON_MAJOR}.${PYTHON_MINOR}-venv
+        else
+            apt install -y python3-venv
+        fi
+        python3 -m venv venv
+    }
+fi
+
 source venv/bin/activate
 pip install --upgrade pip -q
 pip install -r requirements.txt -q
