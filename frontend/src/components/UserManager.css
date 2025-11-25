@@ -1,0 +1,138 @@
+.user-manager-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.user-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.user-manager-header h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.user-form-card {
+  margin-bottom: 2rem;
+}
+
+.user-form {
+  margin-top: 1rem;
+}
+
+.user-stats {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.user-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.user-card {
+  transition: box-shadow 0.3s;
+}
+
+.user-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.user-header h3 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.user-email {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.user-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-admin {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.badge-date {
+  background-color: #e0e0e0;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: none;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .user-manager-container {
+    padding: 1rem;
+  }
+
+  .user-manager-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-header {
+    flex-direction: column;
+  }
+
+  .user-badges {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .user-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .user-actions button {
+    flex: 1;
+  }
+}
+
+

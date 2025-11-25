@@ -1,0 +1,33 @@
+# Virtual environment
+venv/
+env/
+.venv
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# ChromaDB
+chroma_db/
+
+# Environment
+.env
+.env.local
+
+# Uploads
+uploads/
+!uploads/.gitkeep
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+
