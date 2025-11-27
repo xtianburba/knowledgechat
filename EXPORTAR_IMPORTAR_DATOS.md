@@ -4,20 +4,15 @@ Esta guía te ayudará a transferir tus datos (usuarios, conocimiento, imágenes
 
 ## 📤 Paso 1: Exportar Datos desde Local
 
-### Opción A: Usando el script (Recomendado)
+### Usando PowerShell (Windows)
 
-1. En tu máquina local, ejecuta:
-   ```bash
-   cd C:\Users\krystian\Desktop\osac_knowledge
-   chmod +x EXPORTAR_DATOS_LOCAL.sh
-   ./EXPORTAR_DATOS_LOCAL.sh
-   ```
-
-   O en Windows PowerShell:
+1. En tu máquina local, ejecuta PowerShell y:
    ```powershell
    cd C:\Users\krystian\Desktop\osac_knowledge
-   bash EXPORTAR_DATOS_LOCAL.sh
+   powershell -ExecutionPolicy Bypass -File .\EXPORTAR_DATOS_SIMPLE.ps1
    ```
+
+   Esto creará un archivo `export_datos_YYYYMMDD_HHMMSS.zip` con todos tus datos.
 
 ### Opción B: Manualmente
 
@@ -48,24 +43,41 @@ Esta guía te ayudará a transferir tus datos (usuarios, conocimiento, imágenes
 
 ## 📦 Paso 2: Transferir al Servidor
 
-### Opción A: Usando SCP
+### Opción A: Usando SCP (Recomendado)
 
-Desde tu máquina local:
-```bash
-scp export_datos_*.tar.gz root@82.223.20.111:/tmp/
+Desde PowerShell en Windows:
+```powershell
+scp export_datos_*.zip root@82.223.20.111:/tmp/
 ```
 
-### Opción B: Usando WinSCP o FileZilla
+Si te pide contraseña, ingrésala.
 
-1. Conéctate al servidor con WinSCP/FileZilla
-2. Navega a `/tmp/`
-3. Sube el archivo `export_datos_*.tar.gz`
+### Opción B: Transferencia Manual vía SSH (Sin herramientas externas)
 
-### Opción C: Usando Git (si el archivo no es muy grande)
+Si no tienes SCP, puedes usar este método:
 
-```bash
-# Añadir a .gitignore temporalmente no, mejor usar scp
-```
+1. **En Windows PowerShell**, codifica el archivo en base64:
+   ```powershell
+   $content = [Convert]::ToBase64String([IO.File]::ReadAllBytes("export_datos_YYYYMMDD_HHMMSS.zip"))
+   $content | Out-File -Encoding ASCII "export_base64.txt"
+   ```
+
+2. **Copia el contenido del archivo `export_base64.txt`** (puede ser muy grande)
+
+3. **En el servidor SSH**, crea el archivo:
+   ```bash
+   nano /tmp/export_base64.txt
+   # Pega todo el contenido aquí
+   # Guarda: Ctrl+O, Enter, Ctrl+X
+   ```
+
+4. **Decodifica en el servidor**:
+   ```bash
+   base64 -d /tmp/export_base64.txt > /tmp/export_datos_YYYYMMDD_HHMMSS.zip
+   rm /tmp/export_base64.txt
+   ```
+
+**NOTA**: Este método puede ser lento para archivos grandes. Si el archivo es muy grande, mejor usa SCP o pide ayuda para instalar WinSCP.
 
 ## 📥 Paso 3: Importar Datos en el Servidor
 
