@@ -34,15 +34,43 @@ class VectorStore:
                 name="knowledge_base",
                 metadata={"hnsw:space": "cosine"}
             )
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError, Exception) as e:
             # Fallback to old API (ChromaDB 0.3.x)
-            self.client = chromadb.Client(
-                settings={
-                    "chroma_db_impl": "duckdb+parquet",
-                    "persist_directory": settings.chroma_db_path,
-                    "anonymized_telemetry": False
-                }
-            )
+            # Try to disable telemetry first
+            try:
+                import os
+                os.environ["ANONYMIZED_TELEMETRY"] = "False"
+            except:
+                pass
+            
+            # For ChromaDB 0.3.x, try without settings first
+            try:
+                self.client = chromadb.Client()
+                # Set persist directory after creation
+                import chromadb.config
+                if hasattr(chromadb.config, 'Settings'):
+                    settings_obj = chromadb.config.Settings(
+                        chroma_db_impl="duckdb+parquet",
+                        persist_directory=settings.chroma_db_path,
+                        anonymized_telemetry=False
+                    )
+                    self.client = chromadb.Client(settings=settings_obj)
+                else:
+                    self.client = chromadb.Client()
+            except Exception as e2:
+                # Last resort: try with minimal settings
+                try:
+                    from chromadb.config import Settings as ChromaSettingsOld
+                    settings_obj = ChromaSettingsOld(
+                        chroma_db_impl="duckdb+parquet",
+                        persist_directory=settings.chroma_db_path,
+                        anonymized_telemetry=False
+                    )
+                    self.client = chromadb.Client(settings=settings_obj)
+                except:
+                    # If all else fails, use default client
+                    self.client = chromadb.Client()
+            
             self.collection = self.client.get_or_create_collection(
                 name="knowledge_base"
             )
