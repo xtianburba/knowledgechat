@@ -21,8 +21,8 @@ module.exports = {
     },
     {
       name: 'osac-frontend',
-      script: 'serve',
-      args: '-s build -l 3001',
+      script: 'npx',
+      args: 'serve -s build -l 3001',
       cwd: '/opt/osac-knowledge-bot/frontend',
       env: {
         NODE_ENV: 'production',
