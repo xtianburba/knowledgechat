@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
@@ -6,6 +6,7 @@ import './Navbar.css';
 const Navbar = () => {
   const { user, logout, isAdmin, isSupervisor } = useAuth();
   const navigate = useNavigate();
+  const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -40,6 +41,37 @@ const Navbar = () => {
               Usuarios
             </Link>
           )}
+          <div 
+            className="navbar-dropdown"
+            onMouseEnter={() => setToolsMenuOpen(true)}
+            onMouseLeave={() => setToolsMenuOpen(false)}
+          >
+            <button className="navbar-link navbar-dropdown-toggle">
+              Herramientas
+            </button>
+            {toolsMenuOpen && (
+              <div className="navbar-dropdown-menu">
+                {(isAdmin || isSupervisor) && (
+                  <a 
+                    href="https://dashboard.perfumesclub-helping.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="navbar-dropdown-item"
+                  >
+                    Dashboard
+                  </a>
+                )}
+                <a 
+                  href="https://labellens.perfumesclub-helping.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="navbar-dropdown-item"
+                >
+                  LabelLens
+                </a>
+              </div>
+            )}
+          </div>
           <div className="navbar-user">
             <span className="navbar-username">{user?.username}</span>
             {user?.role === 'admin' && <span className="navbar-badge">Admin</span>}
