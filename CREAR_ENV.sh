@@ -29,7 +29,7 @@ GEMINI_API_KEY=
 JWT_SECRET=$JWT_SECRET
 
 # CORS Origins (ajustar según tu dominio)
-CORS_ORIGINS=http://82.223.20.111,http://82.223.20.111:3001,http://localhost:3000,http://localhost:8000
+CORS_ORIGINS=http://osac-knowledge-bot.perfumesclub-helping.com,http://82.223.20.111,http://localhost:3000,http://localhost:8000
 
 # ChromaDB Path
 CHROMA_DB_PATH=/opt/osac-knowledge-bot/backend/chroma_db
