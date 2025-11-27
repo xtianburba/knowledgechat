@@ -21,9 +21,9 @@ module.exports = {
     },
     {
       name: 'osac-frontend',
-      script: './node_modules/.bin/serve',
-      args: '-s build -l 3001',
+      script: '/opt/osac-knowledge-bot/frontend/serve-frontend.sh',
       cwd: '/opt/osac-knowledge-bot/frontend',
+      interpreter: 'bash',
       env: {
         NODE_ENV: 'production',
         PORT: 3001
