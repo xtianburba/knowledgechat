@@ -178,6 +178,12 @@
     align-items: stretch;
   }
 
+  .navbar-dropdown-menu {
+    position: static;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
   .navbar-user {
     flex-direction: row;
     width: 100%;
