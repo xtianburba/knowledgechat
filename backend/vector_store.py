@@ -1,4 +1,6 @@
 """Vector store for RAG using ChromaDB"""
+# Patch SQLite antes de importar chromadb
+import sqlite_patch
 import chromadb
 from typing import List, Dict, Optional
 import json
