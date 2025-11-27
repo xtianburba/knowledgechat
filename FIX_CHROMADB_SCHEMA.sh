@@ -43,84 +43,25 @@ else
 fi
 echo ""
 
-# Intentar reparar la base de datos
-echo -e "${YELLOW}[3/5] Intentando reparar la base de datos...${NC}"
-if [ -f "$CHROMA_DIR/chroma.sqlite3" ]; then
-    echo "  Verificando integridad de la base de datos..."
-    
-    # Ejecutar comando SQLite para verificar
-    python3 << 'PYTHON_SCRIPT'
-import sqlite3
-import sys
+# Recrear ChromaDB (es la solución más segura para esquema corrupto)
+echo -e "${YELLOW}[3/5] Recreando ChromaDB con esquema correcto...${NC}"
 
-chroma_db_path = "/opt/osac-knowledge-bot/backend/chroma_db/chroma.sqlite3"
-
-try:
-    conn = sqlite3.connect(chroma_db_path)
-    cursor = conn.cursor()
-    
-    # Verificar si existe la tabla collections y sus columnas
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='collections';")
-    if cursor.fetchone():
-        cursor.execute("PRAGMA table_info(collections);")
-        columns = [row[1] for row in cursor.fetchall()]
-        print(f"Columnas encontradas en 'collections': {columns}")
-        
-        # Intentar añadir la columna 'topic' si no existe
-        if 'topic' not in columns:
-            print("Intentando añadir columna 'topic'...")
-            try:
-                cursor.execute("ALTER TABLE collections ADD COLUMN topic TEXT;")
-                conn.commit()
-                print("✓ Columna 'topic' añadida")
-            except sqlite3.OperationalError as e:
-                print(f"⚠ No se pudo añadir la columna: {e}")
-        else:
-            print("✓ La columna 'topic' ya existe")
-    else:
-        print("⚠ No se encontró la tabla 'collections'")
-    
-    conn.close()
-except Exception as e:
-    print(f"❌ Error: {e}")
-    sys.exit(1)
-PYTHON_SCRIPT
-
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Reparación completada${NC}"
-    else
-        echo -e "${YELLOW}⚠ La reparación automática falló, se recreará ChromaDB${NC}"
-        RECREATE=true
-    fi
-else
-    echo -e "${YELLOW}⚠ No se encontró chroma.sqlite3${NC}"
-    RECREATE=false
+# Eliminar ChromaDB corrupta
+if [ -d "$CHROMA_DIR" ]; then
+    rm -rf "$CHROMA_DIR"
+    echo "  ChromaDB eliminada"
 fi
+
+# Crear nueva ChromaDB vacía (se inicializará cuando se reinicie el backend)
+mkdir -p "$CHROMA_DIR"
+echo -e "${GREEN}✓ ChromaDB recreada${NC}"
+echo ""
+echo -e "${YELLOW}⚠ IMPORTANTE: Los vectores se han eliminado.${NC}"
+echo -e "${YELLOW}   Necesitas reimportar el conocimiento desde Zendesk.${NC}"
 echo ""
 
-# Si la reparación falló, recrear ChromaDB
-if [ "$RECREATE" = true ] || [ -z "$RECREATE" ]; then
-    echo -e "${YELLOW}[4/5] Recreando ChromaDB (se perderán los vectores pero se pueden reimportar desde Zendesk)...${NC}"
-    
-    # Eliminar ChromaDB corrupta
-    if [ -d "$CHROMA_DIR" ]; then
-        rm -rf "$CHROMA_DIR"
-        echo "  ChromaDB eliminada"
-    fi
-    
-    # Crear nueva ChromaDB vacía
-    mkdir -p "$CHROMA_DIR"
-    echo -e "${GREEN}✓ ChromaDB recreada${NC}"
-    echo ""
-    echo -e "${YELLOW}⚠ IMPORTANTE: Los vectores se han eliminado.${NC}"
-    echo -e "${YELLOW}   Necesitas reimportar el conocimiento desde Zendesk o manualmente.${NC}"
-    echo ""
-else
-    echo -e "${GREEN}[4/5] ChromaDB reparada, no es necesario recrearla${NC}"
-fi
-
 # Reiniciar backend
-echo -e "${YELLOW}[5/5] Reiniciando backend...${NC}"
+echo -e "${YELLOW}[4/5] Reiniciando backend...${NC}"
 pm2 start ecosystem.config.js --only osac-backend
 pm2 save
 sleep 3
@@ -128,21 +69,17 @@ echo -e "${GREEN}✓ Backend reiniciado${NC}"
 echo ""
 
 echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  ✅ Proceso completado!${NC}"
+echo -e "${GREEN}  ✅ ChromaDB recreada!${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 echo "Backup guardado en: $BACKUP_DIR"
 echo ""
 echo "PRÓXIMOS PASOS:"
 echo ""
-echo "1. Prueba el chat para ver si funciona:"
-echo "   (haz una pregunta en la interfaz web)"
+echo "1. Ve a la web: https://osac-knowledge-bot.perfumesclub-helping.com/"
+echo "2. Inicia sesión como admin/supervisor"
+echo "3. Ve a 'Gestionar Conocimiento'"
+echo "4. Haz clic en 'Sincronizar con Zendesk' para reimportar todo el conocimiento"
 echo ""
-echo "2. Si ChromaDB fue recreada, necesitas reimportar el conocimiento:"
-echo "   - Ve a 'Gestionar Conocimiento' en la web"
-echo "   - Haz clic en 'Sincronizar con Zendesk'"
+echo "O espera a que se ejecute la sincronización automática (si está configurada)"
 echo ""
-echo "3. Verifica los logs:"
-echo "   pm2 logs osac-backend --lines 20"
-echo ""
-
