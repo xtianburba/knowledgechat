@@ -585,6 +585,16 @@ async def chat(
     start_time = time.time()
     
     try:
+        logging.info(f"Processing chat request from user {current_user.username}: {message.message[:100]}")
+        
+        # Verify Gemini API key is configured
+        if not settings.gemini_api_key:
+            logging.error("GEMINI_API_KEY is not configured")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="GEMINI_API_KEY is not configured. Please configure it in the .env file."
+            )
+        
         rag_service = get_rag_service()
         result = rag_service.chat(message.message)
         
@@ -644,6 +654,11 @@ async def chat(
             context_count=result.get("context_count", 0)
         )
     except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
+        logging.error(f"Error processing chat: {str(e)}\n{error_traceback}")
+        print(f"❌ Error processing chat: {str(e)}")
+        print(f"Traceback:\n{error_traceback}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error processing chat: {str(e)}"

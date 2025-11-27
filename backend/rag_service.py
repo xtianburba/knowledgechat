@@ -84,9 +84,15 @@ Responde de manera amable y profesional."""
     
     def chat(self, query: str, n_results: int = 5) -> Dict:
         """Chat with RAG - retrieve relevant documents and generate response"""
-        # Retrieve relevant documents
-        vector_store = get_vector_store()
-        search_results = vector_store.search(query, n_results=n_results)
+        try:
+            # Retrieve relevant documents
+            vector_store = get_vector_store()
+            search_results = vector_store.search(query, n_results=n_results)
+        except Exception as e:
+            import traceback
+            print(f"❌ Error retrieving documents from vector store: {str(e)}")
+            print(traceback.format_exc())
+            raise ValueError(f"Error retrieving documents: {str(e)}") from e
         
         # Extract documents
         context_documents = []
@@ -109,7 +115,13 @@ Responde de manera amable y profesional."""
                         })
         
         # Generate response
-        response_text = self.generate_response(query, context_documents)
+        try:
+            response_text = self.generate_response(query, context_documents)
+        except Exception as e:
+            import traceback
+            print(f"❌ Error generating response: {str(e)}")
+            print(traceback.format_exc())
+            raise ValueError(f"Error generating response: {str(e)}") from e
         
         # Append source links to the response
         if source_urls:
