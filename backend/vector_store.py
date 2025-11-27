@@ -20,61 +20,22 @@ class VectorStore:
     """Vector store wrapper for ChromaDB"""
     
     def __init__(self):
-        """Initialize ChromaDB client (compatible with both 0.3.x and 0.4.x)"""
+        """Initialize ChromaDB client (ChromaDB 0.4+)"""
         os.makedirs(settings.chroma_db_path, exist_ok=True)
         
-        # Try new API first (ChromaDB 0.4+)
-        try:
-            self.client = chromadb.PersistentClient(
-                path=settings.chroma_db_path,
-                settings=ChromaSettings(
-                    anonymized_telemetry=False,
-                    allow_reset=True
-                )
+        # Use ChromaDB 0.4+ API
+        self.client = chromadb.PersistentClient(
+            path=settings.chroma_db_path,
+            settings=ChromaSettings(
+                anonymized_telemetry=False,
+                allow_reset=True
             )
-            self.collection = self.client.get_or_create_collection(
-                name="knowledge_base",
-                metadata={"hnsw:space": "cosine"}
-            )
-        except (AttributeError, TypeError, Exception) as e:
-            # Fallback to old API (ChromaDB 0.3.x)
-            # Try to disable telemetry first
-            try:
-                os.environ["ANONYMIZED_TELEMETRY"] = "False"
-            except:
-                pass
-            
-            # For ChromaDB 0.3.x, try without settings first
-            try:
-                self.client = chromadb.Client()
-                # Set persist directory after creation
-                import chromadb.config
-                if hasattr(chromadb.config, 'Settings'):
-                    settings_obj = chromadb.config.Settings(
-                        chroma_db_impl="duckdb+parquet",
-                        persist_directory=settings.chroma_db_path,
-                        anonymized_telemetry=False
-                    )
-                    self.client = chromadb.Client(settings=settings_obj)
-                else:
-                    self.client = chromadb.Client()
-            except Exception as e2:
-                # Last resort: try with minimal settings
-                try:
-                    from chromadb.config import Settings as ChromaSettingsOld
-                    settings_obj = ChromaSettingsOld(
-                        chroma_db_impl="duckdb+parquet",
-                        persist_directory=settings.chroma_db_path,
-                        anonymized_telemetry=False
-                    )
-                    self.client = chromadb.Client(settings=settings_obj)
-                except:
-                    # If all else fails, use default client
-                    self.client = chromadb.Client()
-            
-            self.collection = self.client.get_or_create_collection(
-                name="knowledge_base"
-            )
+        )
+        
+        self.collection = self.client.get_or_create_collection(
+            name="knowledge_base",
+            metadata={"hnsw:space": "cosine"}
+        )
     
     def add_documents(
         self, 
