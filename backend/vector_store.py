@@ -40,7 +40,6 @@ class VectorStore:
             # Fallback to old API (ChromaDB 0.3.x)
             # Try to disable telemetry first
             try:
-                import os
                 os.environ["ANONYMIZED_TELEMETRY"] = "False"
             except:
                 pass
