@@ -1,31 +1,51 @@
 """Vector store for RAG using ChromaDB"""
 import chromadb
-from chromadb.config import Settings as ChromaSettings
 from typing import List, Dict, Optional
 import json
 from config import settings
 import os
+
+# Check ChromaDB version to use appropriate API
+try:
+    import chromadb.config
+    from chromadb.config import Settings as ChromaSettings
+    CHROMADB_NEW_API = True
+except (ImportError, AttributeError):
+    CHROMADB_NEW_API = False
 
 
 class VectorStore:
     """Vector store wrapper for ChromaDB"""
     
     def __init__(self):
-        """Initialize ChromaDB client"""
+        """Initialize ChromaDB client (compatible with both 0.3.x and 0.4.x)"""
         os.makedirs(settings.chroma_db_path, exist_ok=True)
         
-        self.client = chromadb.PersistentClient(
-            path=settings.chroma_db_path,
-            settings=ChromaSettings(
-                anonymized_telemetry=False,
-                allow_reset=True
+        # Try new API first (ChromaDB 0.4+)
+        try:
+            self.client = chromadb.PersistentClient(
+                path=settings.chroma_db_path,
+                settings=ChromaSettings(
+                    anonymized_telemetry=False,
+                    allow_reset=True
+                )
             )
-        )
-        
-        self.collection = self.client.get_or_create_collection(
-            name="knowledge_base",
-            metadata={"hnsw:space": "cosine"}
-        )
+            self.collection = self.client.get_or_create_collection(
+                name="knowledge_base",
+                metadata={"hnsw:space": "cosine"}
+            )
+        except (AttributeError, TypeError):
+            # Fallback to old API (ChromaDB 0.3.x)
+            self.client = chromadb.Client(
+                settings={
+                    "chroma_db_impl": "duckdb+parquet",
+                    "persist_directory": settings.chroma_db_path,
+                    "anonymized_telemetry": False
+                }
+            )
+            self.collection = self.client.get_or_create_collection(
+                name="knowledge_base"
+            )
     
     def add_documents(
         self, 
@@ -99,10 +119,16 @@ class VectorStore:
     def clear_all(self):
         """Clear all documents (use with caution)"""
         self.client.delete_collection(name="knowledge_base")
-        self.collection = self.client.get_or_create_collection(
-            name="knowledge_base",
-            metadata={"hnsw:space": "cosine"}
-        )
+        try:
+            self.collection = self.client.get_or_create_collection(
+                name="knowledge_base",
+                metadata={"hnsw:space": "cosine"}
+            )
+        except (TypeError, AttributeError):
+            # Old API doesn't support metadata in get_or_create_collection
+            self.collection = self.client.get_or_create_collection(
+                name="knowledge_base"
+            )
 
 
 # Global vector store instance (lazy initialization)
