@@ -53,18 +53,22 @@ class RAGService:
             
             prompt = f"""Eres un asistente experto que ayuda a los empleados de una tienda online con preguntas sobre procedimientos, condiciones de envío, manuales y funcionamiento.
 
+IMPORTANTE: Solo puedes responder usando ÚNICAMENTE la información proporcionada en el contexto siguiente. NO inventes, NO asumas, NO uses conocimiento general.
+
 Contexto relevante de la base de conocimiento:
 {context}
 
 Pregunta del usuario: {query}
 
-Instrucciones:
-- Responde de manera clara, concisa y profesional
-- Usa SOLO la información proporcionada en el contexto
-- Si la información no está en el contexto, di amablemente que no tienes esa información específica
-- Si es necesario, proporciona pasos numerados o listas
+Instrucciones CRÍTICAS:
+- Responde SOLO con la información que está explícitamente en el contexto proporcionado
+- Si la información no está completa o no está en el contexto, di claramente: "No tengo información específica sobre esto en la base de conocimiento. Te recomiendo contactar con un supervisor o revisar los documentos oficiales."
+- NUNCA inventes procedimientos, pasos o información que no esté en el contexto
+- NUNCA uses conocimiento general si no está en el contexto
+- Si el contexto tiene información relevante, responde de manera clara, concisa y profesional
+- Si es necesario, proporciona pasos numerados o listas basadas SOLO en el contexto
 - Responde en el mismo idioma que la pregunta
-- Sé específico y práctico en tus respuestas
+- Sé específico y práctico en tus respuestas, pero solo con lo que está en el contexto
 
 Respuesta:"""
         else:
@@ -72,9 +76,12 @@ Respuesta:"""
 
 Pregunta del usuario: {query}
 
-Nota: No tengo información específica en la base de conocimiento sobre esta pregunta. Puedo ayudarte con información general o sugerirte que contactes con un supervisor si necesitas información específica.
+IMPORTANTE: No tengo información específica en la base de conocimiento sobre esta pregunta.
 
-Responde de manera amable y profesional."""
+Debes responder de manera clara y directa:
+"No tengo información específica sobre esto en la base de conocimiento. Te recomiendo contactar con un supervisor o consultar los documentos oficiales de procedimientos para obtener la información exacta que necesitas."
+
+NO inventes información, NO uses conocimiento general, NO asumas respuestas."""
         
         try:
             response = self.model.generate_content(prompt)
