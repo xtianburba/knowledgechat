@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'osac-backend',
-      script: './backend/venv/bin/uvicorn',
-      args: 'main:app --host 0.0.0.0 --port 8001 --workers 2',
+      script: './backend/venv/bin/python',
+      args: '-m uvicorn main:app --host 0.0.0.0 --port 8001 --workers 2',
       cwd: '/opt/osac-knowledge-bot/backend',
       interpreter: 'none',
       env: {
