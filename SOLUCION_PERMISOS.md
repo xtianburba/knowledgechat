@@ -29,3 +29,5 @@ ls -l *.sh
 
 Deberían mostrar `-rwxr-xr-x` (x = ejecutable)
 
+
+

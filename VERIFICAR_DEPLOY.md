@@ -146,3 +146,5 @@ tail -f /var/log/apache2/error.log
 3. ✅ Acceder a http://82.223.20.111
 4. ✅ Crear el primer usuario (será admin)
 
+
+

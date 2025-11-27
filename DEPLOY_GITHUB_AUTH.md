@@ -89,3 +89,5 @@ La información sensible (API keys, passwords) ya está protegida porque:
 - Las bases de datos no se suben a GitHub
 - Los uploads tampoco se suben
 
+
+

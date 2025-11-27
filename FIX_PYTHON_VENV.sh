@@ -29,3 +29,5 @@ echo ""
 echo "O ejecuta:"
 echo "  cd /opt/osac-knowledge-bot/backend && rm -rf venv && python3 -m venv venv"
 
+
+
