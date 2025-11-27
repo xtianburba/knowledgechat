@@ -49,24 +49,32 @@ fi
 
 # Extraer archivo
 echo -e "${YELLOW}[1/4] Extrayendo archivo...${NC}"
-EXPORT_DIR="/tmp/export_datos_$(date +%Y%m%d_%H%M%S)"
+EXPORT_DIR="/tmp/export_datos_extracted_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$EXPORT_DIR"
 
 # Determinar si es .zip o .tar.gz
 if [[ "$EXPORT_FILE" == *.zip ]]; then
     echo "  Extrayendo archivo ZIP..."
-    unzip -q "$EXPORT_FILE" -d "$EXPORT_DIR" 2>/dev/null || {
-        echo -e "${RED}Error al extraer ZIP. Instalando unzip...${NC}"
-        apt-get update && apt-get install -y unzip
-        unzip -q "$EXPORT_FILE" -d "$EXPORT_DIR"
+    # Verificar si unzip está instalado
+    if ! command -v unzip &> /dev/null; then
+        echo "  Instalando unzip..."
+        apt-get update -qq && apt-get install -y unzip > /dev/null 2>&1
+    fi
+    unzip -q "$EXPORT_FILE" -d "$EXPORT_DIR" || {
+        echo -e "${RED}Error al extraer ZIP${NC}"
+        exit 1
     }
-    # Encontrar el directorio dentro del zip
-    EXPORT_DIR=$(find "$EXPORT_DIR" -maxdepth 1 -type d | grep -v "^$EXPORT_DIR$" | head -1 || echo "$EXPORT_DIR")
+    # En ZIP, los archivos pueden estar directamente en EXPORT_DIR o en un subdirectorio
+    if [ "$(ls -A $EXPORT_DIR | wc -l)" -eq 1 ] && [ -d "$EXPORT_DIR/export_datos" ]; then
+        EXPORT_DIR="$EXPORT_DIR/export_datos"
+    fi
 else
     echo "  Extrayendo archivo TAR.GZ..."
     tar -xzf "$EXPORT_FILE" -C "$EXPORT_DIR" --strip-components=1 2>/dev/null || tar -xzf "$EXPORT_FILE" -C "$EXPORT_DIR"
     EXPORT_DIR=$(find "$EXPORT_DIR" -maxdepth 1 -type d | grep -v "^$EXPORT_DIR$" | head -1 || echo "$EXPORT_DIR")
 fi
+
+echo -e "${GREEN}✓ Archivo extraído en: $EXPORT_DIR${NC}"
 
 echo -e "${GREEN}✓ Archivo extraído${NC}"
 echo ""
