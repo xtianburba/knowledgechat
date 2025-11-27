@@ -1,4 +1,7 @@
 """Main FastAPI application"""
+# Patch SQLite antes de cualquier otra importación
+import sqlite_patch
+
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
