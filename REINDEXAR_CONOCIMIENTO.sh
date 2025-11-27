@@ -122,7 +122,8 @@ echo ""
 
 # Reiniciar backend
 echo -e "${YELLOW}[3/4] Reiniciando backend...${NC}"
-pm2 start ecosystem.config.js --only osac-backend
+cd /opt/osac-knowledge-bot
+pm2 start ecosystem.config.js --only osac-backend || pm2 restart osac-backend
 pm2 save
 sleep 3
 echo -e "${GREEN}✓ Backend reiniciado${NC}"
