@@ -25,15 +25,15 @@ fi
 if [ -n "$1" ]; then
     EXPORT_FILE="$1"
 else
-    # Buscar el archivo más reciente en /tmp
-    EXPORT_FILE=$(ls -t /tmp/export_datos_*.tar.gz 2>/dev/null | head -1)
+    # Buscar el archivo más reciente en /tmp (buscar tanto .tar.gz como .zip)
+    EXPORT_FILE=$(ls -t /tmp/export_datos_*.tar.gz /tmp/export_datos_*.zip 2>/dev/null | head -1)
     
     if [ -z "$EXPORT_FILE" ]; then
         echo -e "${RED}No se encontró archivo de exportación${NC}"
         echo ""
-        echo "Uso: $0 [ruta_al_archivo.tar.gz]"
+        echo "Uso: $0 [ruta_al_archivo.tar.gz o .zip]"
         echo ""
-        echo "O coloca el archivo export_datos_*.tar.gz en /tmp/"
+        echo "O coloca el archivo export_datos_*.tar.gz o export_datos_*.zip en /tmp/"
         echo ""
         exit 1
     fi
@@ -51,8 +51,22 @@ fi
 echo -e "${YELLOW}[1/4] Extrayendo archivo...${NC}"
 EXPORT_DIR="/tmp/export_datos_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$EXPORT_DIR"
-tar -xzf "$EXPORT_FILE" -C "$EXPORT_DIR" --strip-components=1 2>/dev/null || tar -xzf "$EXPORT_FILE" -C "$EXPORT_DIR"
-EXPORT_DIR=$(find "$EXPORT_DIR" -maxdepth 1 -type d | grep -v "^$EXPORT_DIR$" | head -1 || echo "$EXPORT_DIR")
+
+# Determinar si es .zip o .tar.gz
+if [[ "$EXPORT_FILE" == *.zip ]]; then
+    echo "  Extrayendo archivo ZIP..."
+    unzip -q "$EXPORT_FILE" -d "$EXPORT_DIR" 2>/dev/null || {
+        echo -e "${RED}Error al extraer ZIP. Instalando unzip...${NC}"
+        apt-get update && apt-get install -y unzip
+        unzip -q "$EXPORT_FILE" -d "$EXPORT_DIR"
+    }
+    # Encontrar el directorio dentro del zip
+    EXPORT_DIR=$(find "$EXPORT_DIR" -maxdepth 1 -type d | grep -v "^$EXPORT_DIR$" | head -1 || echo "$EXPORT_DIR")
+else
+    echo "  Extrayendo archivo TAR.GZ..."
+    tar -xzf "$EXPORT_FILE" -C "$EXPORT_DIR" --strip-components=1 2>/dev/null || tar -xzf "$EXPORT_FILE" -C "$EXPORT_DIR"
+    EXPORT_DIR=$(find "$EXPORT_DIR" -maxdepth 1 -type d | grep -v "^$EXPORT_DIR$" | head -1 || echo "$EXPORT_DIR")
+fi
 
 echo -e "${GREEN}✓ Archivo extraído${NC}"
 echo ""
