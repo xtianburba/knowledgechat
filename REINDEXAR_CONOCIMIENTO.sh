@@ -32,6 +32,9 @@ echo ""
 # Activar entorno virtual y ejecutar script Python
 echo -e "${YELLOW}[2/4] Reindexando conocimiento desde SQLite a ChromaDB...${NC}"
 
+# Activar entorno virtual
+source venv/bin/activate
+
 python3 << 'PYTHON_SCRIPT'
 import sys
 import os
