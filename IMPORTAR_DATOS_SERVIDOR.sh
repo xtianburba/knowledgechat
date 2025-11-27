@@ -60,12 +60,17 @@ if [[ "$EXPORT_FILE" == *.zip ]]; then
         echo "  Instalando unzip..."
         apt-get update -qq && apt-get install -y unzip > /dev/null 2>&1
     fi
-    unzip -q "$EXPORT_FILE" -d "$EXPORT_DIR" || {
-        echo -e "${RED}Error al extraer ZIP${NC}"
+    # Extraer ZIP ignorando la estructura de directorios de Windows
+    unzip -o "$EXPORT_FILE" -d "$EXPORT_DIR" 2>&1 | grep -v "backslashes" || true
+    # Verificar que se extrajo algo
+    if [ ! "$(ls -A $EXPORT_DIR)" ]; then
+        echo -e "${RED}Error: El ZIP está vacío o no se pudo extraer${NC}"
         exit 1
-    }
-    # En ZIP, los archivos pueden estar directamente en EXPORT_DIR o en un subdirectorio
-    if [ "$(ls -A $EXPORT_DIR | wc -l)" -eq 1 ] && [ -d "$EXPORT_DIR/export_datos" ]; then
+    fi
+    echo -e "${GREEN}✓ Archivo extraído${NC}"
+    # Los archivos deberían estar directamente en EXPORT_DIR
+    # Si hay un subdirectorio "export_datos", usarlo
+    if [ -d "$EXPORT_DIR/export_datos" ]; then
         EXPORT_DIR="$EXPORT_DIR/export_datos"
     fi
 else
