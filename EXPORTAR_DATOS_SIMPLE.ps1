@@ -62,7 +62,13 @@ Write-Host ""
 # Comprimir
 Write-Host "Comprimiendo..." -ForegroundColor Yellow
 $ZIP_FILE = "export_datos_$TIMESTAMP.zip"
-Compress-Archive -Path $EXPORT_DIR\* -DestinationPath $ZIP_FILE -Force
+
+# Eliminar ZIP anterior si existe
+if (Test-Path $ZIP_FILE) {
+    Remove-Item $ZIP_FILE -Force
+}
+
+Compress-Archive -Path "$EXPORT_DIR\*" -DestinationPath $ZIP_FILE -Force
 Remove-Item $EXPORT_DIR -Recurse -Force
 Write-Host "✓ Archivo creado: $ZIP_FILE" -ForegroundColor Green
 Write-Host ""
@@ -83,13 +89,8 @@ Write-Host ""
 Write-Host "   Opción B - Usando PowerShell SCP:" -ForegroundColor Cyan
 Write-Host "   scp $ZIP_FILE root@82.223.20.111`:/tmp/" -ForegroundColor White
 Write-Host ""
-Write-Host "   Opción C - Manual (si no tienes SCP):" -ForegroundColor Cyan
-Write-Host "   - Conéctate al servidor por SSH" -ForegroundColor White
-Write-Host "   - Usa 'cat' o 'base64' para transferir (ver instrucciones en EXPORTAR_IMPORTAR_DATOS.md)" -ForegroundColor White
-Write-Host ""
 Write-Host "2. En el servidor, ejecuta:" -ForegroundColor Yellow
 Write-Host "   cd /opt/osac-knowledge-bot" -ForegroundColor White
 Write-Host "   git pull" -ForegroundColor White
 Write-Host "   sudo ./IMPORTAR_DATOS_SERVIDOR.sh /tmp/$ZIP_FILE" -ForegroundColor White
 Write-Host ""
-
