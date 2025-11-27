@@ -84,12 +84,29 @@ Responde de manera amable y profesional."""
     
     def chat(self, query: str, n_results: int = 5) -> Dict:
         """Chat with RAG - retrieve relevant documents and generate response"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         try:
             # Retrieve relevant documents
             vector_store = get_vector_store()
             search_results = vector_store.search(query, n_results=n_results)
+            
+            logger.info(f"Search query: '{query}' - Found {len(search_results)} results")
+            
+            # Check if vector store is empty
+            try:
+                count = vector_store.collection.count()
+                logger.info(f"Total documents in ChromaDB: {count}")
+                if count == 0:
+                    logger.warning("⚠️  ChromaDB is EMPTY! No documents indexed.")
+            except Exception as e:
+                logger.warning(f"Could not count documents: {e}")
+                
         except Exception as e:
             import traceback
+            logger.error(f"❌ Error retrieving documents from vector store: {str(e)}")
+            logger.error(traceback.format_exc())
             print(f"❌ Error retrieving documents from vector store: {str(e)}")
             print(traceback.format_exc())
             raise ValueError(f"Error retrieving documents: {str(e)}") from e
@@ -99,10 +116,18 @@ Responde de manera amable y profesional."""
         sources = []
         source_urls = []  # Collect unique URLs
         
-        for result in search_results:
+        if not search_results:
+            logger.warning(f"No search results found for query: '{query}'")
+            print(f"⚠️  No search results found for query: '{query}'")
+        
+        for i, result in enumerate(search_results):
             if result["document"]:
                 context_documents.append(result["document"])
                 metadata = result.get("metadata", {})
+                distance = result.get("distance", 0.0)
+                
+                logger.info(f"Result {i+1}: distance={distance:.4f}, title={metadata.get('title', 'N/A')}")
+                
                 if metadata:
                     sources.append(metadata)
                     # Collect URLs from metadata
